@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+.env
+!.env.example
+.dart_tool/
+build/
+*.log
+.idea/
+.vscode/
+artifacts/
+key.properties
+*.jks
+*.keystore

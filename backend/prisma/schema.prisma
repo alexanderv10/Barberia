@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  BARBER
+  ADMIN
+}
+
+enum AppointmentStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum StampEventType {
+  EARNED
+  REDEEMED
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(CLIENT)
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  card         LoyaltyCard?
+  bookings     Appointment[] @relation("ClientBookings")
+  agenda       Appointment[] @relation("BarberAgenda")
+  actions      StampEvent[]
+}
+
+model Service {
+  id             String @id @default(uuid()) @db.Uuid
+  name           String
+  description    String
+  durationMin    Int
+  priceCents     Int
+  rewardEligible Boolean @default(false)
+  active         Boolean @default(true)
+  appointments   Appointment[]
+}
+
+model Appointment {
+  id          String @id @default(uuid()) @db.Uuid
+  clientId    String @db.Uuid
+  barberId    String @db.Uuid
+  serviceId   String @db.Uuid
+  startsAt    DateTime @db.Timestamptz(3)
+  endsAt      DateTime @db.Timestamptz(3)
+  priceCents  Int
+  isReward    Boolean @default(false)
+  status      AppointmentStatus @default(PENDING)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  completedAt DateTime? @db.Timestamptz(3)
+  acceptedAt  DateTime? @db.Timestamptz(3)
+  client      User @relation("ClientBookings", fields: [clientId], references: [id])
+  barber      User @relation("BarberAgenda", fields: [barberId], references: [id])
+  service     Service @relation(fields: [serviceId], references: [id])
+  stampEvent  StampEvent?
+  @@index([barberId, startsAt])
+  @@index([clientId, startsAt])
+}
+
+model LoyaltyCard {
+  id            String @id @default(uuid()) @db.Uuid
+  clientId      String @unique @db.Uuid
+  currentStamps Int @default(0)
+  lifetimeStamps Int @default(0)
+  client        User @relation(fields: [clientId], references: [id])
+  events        StampEvent[]
+}
+
+model StampEvent {
+  id            String @id @default(uuid()) @db.Uuid
+  cardId        String @db.Uuid
+  appointmentId String @unique @db.Uuid
+  actorId       String @db.Uuid
+  type          StampEventType
+  createdAt     DateTime @default(now()) @db.Timestamptz(3)
+  card          LoyaltyCard @relation(fields: [cardId], references: [id])
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  actor         User @relation(fields: [actorId], references: [id])
+  @@index([cardId, createdAt])
+}
