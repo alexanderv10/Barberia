@@ -8,6 +8,7 @@ import 'loyalty.dart';
 import 'scanner.dart';
 import 'admin.dart';
 import 'booking.dart';
+import 'account_access.dart';
 
 class AppShell extends StatefulWidget {
   final Store store;
@@ -108,6 +109,8 @@ class _AppShellState extends State<AppShell> {
                   'Perfil: ${{'CLIENT': 'Cliente', 'BARBER': 'Barbero', 'ADMIN': 'Administrador'}[s.user!['role']]}',
                 ),
                 const SizedBox(height: 26),
+                if (!s.demo) EmailVerificationPanel(store: s),
+                const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: s.logout,
                   icon: const Icon(Icons.logout),
@@ -341,6 +344,31 @@ class _AppShellState extends State<AppShell> {
                             fontSize: 10,
                             color: Color(0xFF8C6A29),
                           ),
+                        ),
+                      ),
+                    if (!widget.store.demo &&
+                        widget.store.user?['emailVerified'] != true)
+                      Container(
+                        color: AppColors.soft,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 6,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                widget.store.accountNotice ??
+                                    'Tu correo está pendiente de verificación.',
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () =>
+                                  navigate(destinations.length - 1),
+                              child: const Text('Mi cuenta'),
+                            ),
+                          ],
                         ),
                       ),
                     Expanded(

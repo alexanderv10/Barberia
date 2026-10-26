@@ -4,7 +4,9 @@
 
 Validado localmente: migraciones en PostgreSQL 17, build TypeScript, pruebas de horario, integración HTTP con PostgreSQL, análisis y pruebas de widgets Flutter, build Flutter Web y revisión visual en navegador.
 
-No publicado: backend, web, App Store y Google Play. No se han compilado ni firmado binarios móviles en esta entrega. El equipo tiene licencias Android pendientes; iOS requiere un equipo macOS con Xcode. El escáner está implementado con permisos nativos, pero no se ha probado una cámara física.
+No publicado: backend, web, App Store y Google Play. Ya se generó e instaló una APK de depuración en Android; la firma de producción sigue pendiente. iOS requiere un equipo macOS con Xcode. Falta confirmar el flujo completo del escáner con cámara física.
+
+La base actual ya está en Supabase; API y web siguen locales. La recuperación de contraseña y verificación de correo están implementadas. Configura el remitente SMTP y `APP_WEB_URL` HTTPS antes de publicar; consulta [correo de cuentas](account-email.md).
 
 ## API y PostgreSQL
 
@@ -63,4 +65,4 @@ La lectura de QR en navegador necesita cámara y un contexto HTTPS o localhost. 
 
 Confirmar identidad visual, tarifas, horario real y qué servicios canjean el beneficio. La implementación inicial limita la tarjeta a diez sellos y pausa la acumulación hasta el canje. Para más sucursales o husos horarios, separar la configuración por local y adaptar la presentación horaria del frontend, que actualmente usa UTC−5.
 
-Antes de uso público, concretar política de cancelación, privacidad y retención de datos del negocio, recuperación de contraseña y verificación de correo. Estas dos últimas funciones no forman parte del MVP. No se incluyen cobros en línea ni notificaciones por correo/push.
+Antes de uso público, concretar política de cancelación, privacidad y retención de datos del negocio. Recuperación y verificación de correo ya están implementadas; falta configurar un remitente real y decidir si el negocio exigirá verificar el correo antes de reservar. No se incluyen cobros en línea ni recordatorios de citas por correo/push.

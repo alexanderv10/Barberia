@@ -10,7 +10,10 @@ Push-Location $taskRoot
 try {
     node scripts/configure-web.mjs
     if ($LASTEXITCODE -ne 0) { throw 'No se pudieron generar las cabeceras de seguridad web.' }
-    docker compose --profile app up -d --build --wait
+    $taskComposeArgs = @('compose', '--profile', 'app')
+    $taskLocalMail = Get-Content -LiteralPath (Join-Path $taskRoot 'backend/.env') | Where-Object { $_ -match '^MAIL_MODE=["\x27]?local["\x27]?\s*$' }
+    if ($taskLocalMail) { $taskComposeArgs += @('--profile', 'mail') }
+    docker @taskComposeArgs up -d --build --wait
     if ($LASTEXITCODE -ne 0) { throw 'No se pudo iniciar la aplicación. Comprueba Docker Desktop y ejecuta docker compose --profile app logs --tail 30.' }
     docker compose --profile app exec -T web nginx -t
     if ($LASTEXITCODE -ne 0) { throw 'La configuración de seguridad de Nginx no es válida.' }

@@ -1,6 +1,14 @@
 node_modules
 dist
 .env
+.env.*
+*.env
 coverage
 *.log
 test
+*.dump
+*.backup
+*.bak
+*.key
+*.p12
+*.pfx

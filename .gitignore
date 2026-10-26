@@ -2,6 +2,8 @@ node_modules/
 dist/
 coverage/
 .env
+.env.*
+*.env
 !.env.example
 .dart_tool/
 build/
@@ -12,3 +14,16 @@ artifacts/
 key.properties
 *.jks
 *.keystore
+# Database exports, local backup copies and mobile release packages.
+*.dump
+*.backup
+*.bak
+*.sql.gz
+*.apk
+*.aab
+*.ipa
+# Private signing material. Public CA certificates (*.crt) remain versioned.
+*.key
+*.p12
+*.pfx
+*.mobileprovision

@@ -5,6 +5,7 @@ import 'theme.dart';
 import 'screens/login.dart';
 import 'screens/shell.dart';
 import 'screens/public_home.dart';
+import 'screens/account_access.dart';
 
 void main() => runApp(const BarberiaApp());
 
@@ -17,6 +18,16 @@ class BarberiaApp extends StatefulWidget {
 
 class _BarberiaAppState extends State<BarberiaApp> {
   late final store = widget.store ?? Store();
+  late Uri? actionLink = _readActionLink();
+  Uri? _readActionLink() {
+    final link = Uri.tryParse(Uri.base.fragment);
+    if (link == null ||
+        !['/account/verify', '/account/reset'].contains(link.path)) {
+      return null;
+    }
+    return link;
+  }
+
   @override
   void dispose() {
     store.dispose();
@@ -31,9 +42,18 @@ class _BarberiaAppState extends State<BarberiaApp> {
     locale: const Locale('es'),
     localizationsDelegates: GlobalMaterialLocalizations.delegates,
     supportedLocales: const [Locale('es')],
+    // Handle account links explicitly; email tokens are in the fragment, never sent to the web server.
+    initialRoute: '/',
     home: ListenableBuilder(
       listenable: store,
-      builder: (context, _) => store.user == null
+      builder: (context, _) => actionLink != null
+          ? AccountAccessScreen(
+              store: store,
+              action: actionLink!.path.endsWith('/verify') ? 'verify' : 'reset',
+              token: actionLink!.queryParameters['token'],
+              onDone: () => setState(() => actionLink = null),
+            )
+          : store.user == null
           ? store.authRequested
                 ? LoginScreen(store: store)
                 : PublicHome(store: store)

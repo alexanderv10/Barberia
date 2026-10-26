@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/store.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import 'account_access.dart';
 
 class LoginScreen extends StatefulWidget {
   final Store store;
@@ -206,6 +207,23 @@ class _LoginScreenState extends State<LoginScreen> {
                               : null,
                           onFieldSubmitted: (_) => busy ? null : submit(),
                         ),
+                        if (!register)
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: busy
+                                  ? null
+                                  : () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => AccountAccessScreen(
+                                          store: widget.store,
+                                          action: 'forgot',
+                                        ),
+                                      ),
+                                    ),
+                              child: const Text('¿Olvidaste tu contraseña?'),
+                            ),
+                          ),
                         const SizedBox(height: 24),
                         if (error != null)
                           Padding(

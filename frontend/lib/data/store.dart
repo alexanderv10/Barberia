@@ -8,11 +8,18 @@ class Store extends ChangeNotifier {
   String? pendingServiceId;
   Json shop = {};
   Json? user;
+  String? accountNotice;
   bool demo = false;
   List<Json> services = [], barbers = [], appointments = [];
   Json card = {'currentStamps': 0, 'events': []};
   bool get staff => user != null && user!['role'] != 'CLIENT';
   bool get admin => user?['role'] == 'ADMIN';
+
+  Future<void> refreshIdentity() async {
+    if (demo || user == null) return;
+    user = Json.from(await api.request('auth/me'));
+    notifyListeners();
+  }
 
   void requestLogin({bool booking = false, Json? service}) {
     pendingReservation = booking;
@@ -53,6 +60,11 @@ class Store extends ChangeNotifier {
     );
     api.token = data['accessToken'];
     user = Json.from(data['user']);
+    accountNotice = name == null
+        ? null
+        : data['verificationEmailSent'] == true
+        ? 'Te enviamos un enlace para verificar tu correo.'
+        : 'Tu cuenta está creada, pero no pudimos enviar el correo. Puedes reintentarlo en Mi cuenta.';
     demo = false;
     notifyListeners();
   }
@@ -122,12 +134,14 @@ class Store extends ChangeNotifier {
         api.request('appointments'),
         if (!staff) api.request('stamps/card'),
         api.request('shop'),
+        api.request('auth/me'),
       ]);
       services = (result[0] as List).map((e) => Json.from(e)).toList();
       barbers = (result[1] as List).map((e) => Json.from(e)).toList();
       appointments = (result[2] as List).map((e) => Json.from(e)).toList();
       if (!staff) card = Json.from(result[3]);
-      shop = Json.from(result.last);
+      shop = Json.from(result[result.length - 2]);
+      user = Json.from(result.last);
     }
     notifyListeners();
   }
@@ -297,6 +311,7 @@ class Store extends ChangeNotifier {
     pendingReservation = false;
     pendingServiceId = null;
     user = null;
+    accountNotice = null;
     api.token = null;
     services = [];
     barbers = [];

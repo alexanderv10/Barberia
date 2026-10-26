@@ -9,6 +9,10 @@ Prefijo `/api`. JSON. Usa `Authorization: Bearer <accessToken>` excepto en regis
 | POST | /auth/register | Público | Crea cliente + tarjeta y devuelve sesión |
 | POST | /auth/login | Público | Devuelve sesión JWT |
 | GET | /auth/me | Sesión | Perfil sin datos de contraseña |
+| POST | /auth/password/forgot | Público | Solicita enlace; respuesta neutral ante cuentas inexistentes |
+| POST | /auth/password/reset | Público | Token de recuperación y nueva contraseña; revoca sesiones previas |
+| POST | /auth/email/verify | Público | Consume enlace de verificación de un solo uso |
+| POST | /auth/email/resend | Sesión | Reenvía verificación respetando límites por cuenta |
 | GET | /users/barbers | Público | Barberos activos (solo id y nombre; no correos) |
 | POST | /users/barbers | ADMIN | Crea cuenta BARBER |
 | GET | /services | Público | Catálogo activo |

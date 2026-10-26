@@ -4,6 +4,10 @@ Aplicación de reservas y fidelización: **Flutter (Android, iOS y Web) → Nest
 
 Esta entrega es un MVP integrado para desarrollo local. Incluye cuentas de cliente/barbero/administrador, reservas, confirmación y cancelación, agenda, tarjeta de diez sellos, QR temporal, escáner y administración de servicios/equipo. La publicación en hosting y tiendas no se ha realizado.
 
+La instalación actual tiene la **base de datos en Supabase**; la API NestJS y Flutter siguen ejecutándose localmente. Consulta [la conexión, el respaldo y la recuperación](docs/supabase.md). Las instrucciones desde cero de abajo describen una instalación con PostgreSQL local.
+
+Incluye [recuperación de contraseña y verificación de correo](docs/account-email.md), con envío SMTP real o buzón local de pruebas. Para configurar un Gmail remitente utiliza `scripts/configure-gmail.ps1`; sus credenciales permanecen fuera de Git.
+
 ## Ver la aplicación
 
 Si el login muestra un error de conexión, comprueba que la API esté encendida. Con dependencias y compilaciones ya preparadas, puedes iniciar PostgreSQL, API y web en segundo plano desde la raíz:
@@ -20,7 +24,7 @@ Al pulsar **Reservar una cita** o elegir un servicio sin sesión, se solicita in
 
 Configura `SHOP_NAME`, `SHOP_ADDRESS` y `SHOP_PHONE` en `backend/.env` y reinicia la API para mostrar los datos reales del negocio. La dirección y el contacto vacíos se presentan como **por confirmar**. Esta información también está disponible en el inicio del cliente autenticado.
 
-Para conectarte al backend usa las cuentas locales creadas con `db:seed`:
+En una instalación nueva de desarrollo, `db:seed` permite crear las siguientes cuentas de ejemplo. No se crean automáticamente y pueden haberse eliminado en una instalación ya configurada:
 
 | Perfil | Correo |
 | --- | --- |
@@ -29,7 +33,7 @@ Para conectarte al backend usa las cuentas locales creadas con `db:seed`:
 | Barbero | lucas@barberia.local |
 | Administrador | admin@barberia.local |
 
-La contraseña es el valor de `SEED_PASSWORD` usado al crear las cuentas (en esta demostración local se configuró `BarberiaDemo2026!`). El ejemplo de configuración deja ese valor vacío para que elijas uno propio en una instalación nueva. El registro público siempre crea un **CLIENT**. El seed es explícito, no cambia cuentas existentes y está bloqueado cuando `NODE_ENV=production`.
+La contraseña es el valor de `SEED_PASSWORD` usado al crear las cuentas. El ejemplo de configuración deja ese valor vacío para que elijas uno propio en una instalación nueva. El registro público siempre crea un **CLIENT**. El seed es explícito, no cambia cuentas existentes y está bloqueado cuando `NODE_ENV=production`.
 
 ## Ejecutar desde cero (PowerShell)
 
@@ -113,7 +117,7 @@ Integración con PostgreSQL separado (desde la raíz, una vez):
 ```powershell
 docker compose exec -T db createdb -U barberia barberia_test
 Set-Location backend
-$env:DATABASE_URL = 'postgresql://barberia:barberia_local@localhost:5432/barberia_test?schema=public'
+$env:DATABASE_URL = 'postgresql://barberia:CHANGE_ME@localhost:5432/barberia_test?schema=public'
 $env:TEST_DATABASE_URL = $env:DATABASE_URL
 npm.cmd run db:migrate
 npm.cmd run test:integration

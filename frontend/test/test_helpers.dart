@@ -52,6 +52,8 @@ Store testStore({List<String>? requests, bool unavailable = false}) => Store(
         return http.Response('{"message":"Sin sesión"}', 401);
       }
       if (path == 'appointments') return http.Response('[]', 200);
+      if (path == 'auth/me') return http.Response('{"id":"client","name":"Alex Moreno","email":"cliente@ejemplo.com","role":"CLIENT","emailVerified":false}', 200);
+      if (path == 'auth/email/resend') return http.Response('{"sent":true,"message":"Enviamos un enlace a tu correo."}', 201);
       if (path == 'stamps/card') {
         return http.Response('{"currentStamps":0,"events":[]}', 200);
       }

@@ -4,7 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
-export interface Actor { id: string; role: Role; name: string; email: string }
+export interface Actor { id: string; role: Role; name: string; email: string; emailVerifiedAt?: Date | null }
 export const Public = () => SetMetadata('public', true);
 export const Roles = (...roles: Role[]) => SetMetadata('roles', roles);
 export const CurrentUser = createParamDecorator((_: unknown, ctx: ExecutionContext): Actor => ctx.switchToHttp().getRequest().user);
@@ -20,8 +20,8 @@ export class AuthGuard implements CanActivate {
     try {
       const claims = await this.jwt.verifyAsync(token, { algorithms: ['HS256'] });
       if (claims.type !== 'access') throw new Error('Invalid token purpose');
-      const user = await this.db.user.findUnique({ where: { id: claims.sub }, select: { id: true, name: true, role: true, email: true, active: true } });
-      if (!user?.active) throw new Error('Inactive user');
+      const user = await this.db.user.findUnique({ where: { id: claims.sub }, select: { id: true, name: true, role: true, email: true, active: true, emailVerifiedAt: true, sessionVersion: true } });
+      if (!user?.active || (claims.ver ?? 0) !== user.sessionVersion) throw new Error('Inactive or revoked session');
       req.user = user;
     } catch { throw new UnauthorizedException('Tu sesión expiró. Vuelve a ingresar.'); }
     const roles = this.reflector.getAllAndOverride<Role[]>('roles', [context.getHandler(), context.getClass()]);

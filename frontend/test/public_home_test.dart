@@ -62,6 +62,7 @@ void main() {
       expect(find.text('Hola, Alex 👋'), findsOneWidget);
       await tester.tap(find.byIcon(Icons.person_outline).last);
       await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('Cerrar sesión'));
       await tester.tap(find.text('Cerrar sesión'));
       await tester.pumpAndSettle();
       expect(find.text('Ver servicios'), findsOneWidget);

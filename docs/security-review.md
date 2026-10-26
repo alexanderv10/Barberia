@@ -2,6 +2,10 @@
 
 Alcance: API NestJS, Prisma/PostgreSQL, configuración Docker, Flutter Web y servidor de vista previa. Es una revisión de los siete controles solicitados, no una certificación ni una prueba de penetración completa.
 
+Actualización posterior: la base se trasladó a Supabase con validación TLS estricta y certificado explícito. RLS sigue pendiente por decisión del proyecto y la Data API debe permanecer desactivada. Los resultados sobre privilegios de PostgreSQL que siguen corresponden a la base local revisada originalmente; no describen los roles administrados por Supabase. Consulta [la migración](supabase.md).
+
+También se añadieron [recuperación de contraseña y verificación de correo](account-email.md): tokens aleatorios de un solo uso almacenados como hash, propósito y vencimiento; límites de envío por cuenta; transacciones para el consumo concurrente; revocación de sesiones al restablecer la contraseña; SMTP con TLS obligatorio para proveedores externos. Se admite Mailpit en pruebas y un remitente SMTP real según la configuración local, excluida de Git.
+
 | Punto | Estado después de la revisión | Evidencia |
 | --- | --- | --- |
 | 1. Secretos en variables de entorno | Reforzado | JWT, URL de BD, contraseña de PostgreSQL y contraseña del seed provienen del entorno. Se eliminaron las contraseñas por defecto de Compose y del ejemplo del seed. `.env` y `backend/.env` están ignorados y excluidos de la imagen. El JWT rechaza secretos cortos o el placeholder. |
@@ -9,7 +13,7 @@ Alcance: API NestJS, Prisma/PostgreSQL, configuración Docker, Flutter Web y ser
 | 3. Validación backend | Configurada y reforzada | DTO con tipos, UUID, fechas, límites, rangos y campos permitidos. `ValidationPipe` global rechaza campos extra. Límite JSON de 16 KiB. Se validan también propiedad de las citas, horario, disponibilidad y condiciones del beneficio. |
 | 4. Normalización y texto plano | Añadido | Nombre y descripción se normalizan en Unicode NFC; se recortan espacios y se normalizan saltos de línea. Se rechazan etiquetas y controles ocultos. Emails se recortan y convierten a minúsculas. Contraseñas, JWT y QR no se modifican. |
 | 5. Rate limiting | Configurado y probado | Global: 120/minuto por IP y endpoint. Login/registro: 10/minuto. Escaneo QR: 30/minuto. Completar visita: 20/minuto. Healthcheck: 60/minuto (el monitor local consulta 12/minuto). Respuesta 429 al exceder límites. |
-| 6. Row Level Security | **No activo; pendiente antes de endurecer el despliegue público** | Se consultó `pg_class`: las tablas no tienen RLS. El rol actual de BD tiene `rolsuper=true` y `rolbypassrls=true`. El aislamiento actual lo aplica la API, no PostgreSQL. |
+| 6. Row Level Security | **No activo; pendiente por decisión del proyecto** | En la base local original se consultó `pg_class`: las tablas no tenían RLS y su rol tenía `rolsuper=true` y `rolbypassrls=true`. La migración a Supabase conserva el aislamiento en la API y no añade políticas RLS. |
 | 7. Content Security Policy | Añadida a la web | Cabecera CSP en Nginx y en `preview.mjs`, compartida mediante `security-headers.json`. Scripts propios y una URL exacta y versionada del decodificador QR. Sin `unsafe-inline` ni `unsafe-eval` en scripts. Flutter se compila con `--csp` y CanvasKit local. |
 
 ## Interpretación de los controles

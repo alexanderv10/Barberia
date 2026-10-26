@@ -31,11 +31,31 @@ model User {
   passwordHash String
   role         Role     @default(CLIENT)
   active       Boolean  @default(true)
+  emailVerifiedAt DateTime? @db.Timestamptz(3)
+  sessionVersion Int @default(0)
   createdAt    DateTime @default(now()) @db.Timestamptz(3)
   card         LoyaltyCard?
   bookings     Appointment[] @relation("ClientBookings")
   agenda       Appointment[] @relation("BarberAgenda")
   actions      StampEvent[]
+  accountTokens AccountToken[]
+}
+
+enum AccountTokenPurpose {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+model AccountToken {
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @db.Uuid
+  tokenHash String @unique @db.Char(64)
+  purpose   AccountTokenPurpose
+  expiresAt DateTime @db.Timestamptz(3)
+  usedAt    DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, purpose, createdAt])
 }
 
 model Service {
