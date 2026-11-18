@@ -44,9 +44,9 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Demo barbero'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Aceptar'));
-    await tester.pumpAndSettle();
-    expect(find.text('Aceptada'), findsOneWidget);
+    expect(find.text('Confirmada'), findsOneWidget);
+    expect(find.text('Aceptar'), findsNothing);
+    expect(find.text('Cancelar'), findsNothing);
     await tester.tap(find.text('Escanear QR'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Usar QR de ejemplo'));

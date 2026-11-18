@@ -61,6 +61,7 @@ class _AppShellState extends State<AppShell> {
           ('Agenda', Icons.calendar_month_outlined),
           ('Escanear QR', Icons.qr_code_scanner),
           ('Servicios', Icons.content_cut),
+          if (widget.store.admin) ('Barberos', Icons.group_outlined),
           ('Mi cuenta', Icons.person_outline),
         ]
       : [
@@ -72,6 +73,7 @@ class _AppShellState extends State<AppShell> {
         ];
   Widget content() {
     final s = widget.store;
+    if (s.admin && page == 3) return BarberAdminPanel(store: s);
     if (page == destinations.length - 1) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,

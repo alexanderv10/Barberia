@@ -2,7 +2,7 @@
 
 Aplicación de reservas y fidelización: **Flutter (Android, iOS y Web) → NestJS REST → PostgreSQL + Prisma**.
 
-Esta entrega es un MVP integrado para desarrollo local. Incluye cuentas de cliente/barbero/administrador, reservas, confirmación y cancelación, agenda, tarjeta de diez sellos, QR temporal, escáner y administración de servicios/equipo. La publicación en hosting y tiendas no se ha realizado.
+Esta entrega es un MVP integrado para desarrollo local. Incluye cuentas de cliente/barbero/administrador, reservas con confirmación inmediata, agenda, tarjeta de diez sellos, QR temporal, escáner y administración de servicios/equipo. La publicación en hosting y tiendas no se ha realizado.
 
 La instalación actual tiene la **base de datos en Supabase**; la API NestJS y Flutter siguen ejecutándose localmente. Consulta [la conexión, el respaldo y la recuperación](docs/supabase.md). Las instrucciones desde cero de abajo describen una instalación con PostgreSQL local.
 
@@ -90,13 +90,13 @@ Las carpetas nativas y permisos de cámara están generados. En el emulador Andr
 ## Reglas de esta versión
 
 - Un local, USD, hora comercial `America/Guayaquil` (UTC−5), lunes–sábado de 09:00 a 19:00. Franjas de inicio cada 30 minutos, con duración real por servicio y máximo 60 días de anticipación. El cliente ve siempre la hora de Ecuador, aunque su dispositivo esté en otra zona.
-- Reservar ocupa inmediatamente el horario. El barbero asignado o el administrador puede **aceptar** la cita; se registra `acceptedAt` manteniendo el estado `PENDING` hasta completarla o cancelarla.
-- No se permiten traslapes para el barbero **ni para el cliente**. Las restricciones SQL cubren citas pendientes y completadas; las canceladas liberan el horario. Los intervalos adyacentes sí se permiten.
+- Reservar confirma la cita y ocupa inmediatamente el horario. La cita sigue activa hasta que el barbero completa el servicio.
+- No se permiten traslapes para el barbero **ni para el cliente**. Las restricciones SQL cubren citas pendientes y completadas; las citas canceladas históricas no ocupan el horario. Los intervalos adyacentes sí se permiten.
 - Precios y duración quedan fijados al reservar mediante `priceCents`, `startsAt` y `endsAt`. Editar el catálogo no cambia esas condiciones de citas existentes.
 - El cliente tiene una tarjeta única. Su QR firmado identifica la tarjeta y vence en cinco minutos; la pantalla lo renueva cada cuatro minutos. El token de acceso no sirve como QR y viceversa.
 - Solo el barbero asignado o el administrador completa un servicio, después de validar el QR del cliente y de que la cita haya comenzado. No hay un endpoint para sumar sellos arbitrariamente.
 - Una cita pagada completada genera **un sello**, hasta el límite de diez. Con diez, el beneficio queda disponible y se pausa la acumulación hasta canjearlo. Solo se permite una reserva de regalo pendiente por cliente.
-- El regalo se reserva eligiendo un servicio elegible y activando **Usar mi corte gratis**. Los diez sellos se descuentan al completar ese servicio, no al reservarlo; cancelar conserva el beneficio. El regalo no genera sello.
+- El regalo se reserva eligiendo un servicio elegible y activando **Usar mi corte gratis**. Los diez sellos se descuentan al completar ese servicio, no al reservarlo. El regalo no genera sello.
 - Completar, actualizar tarjeta y registrar movimiento ocurre en una transacción serializable. `StampEvent.appointmentId` es único y los bloqueos de concurrencia se reintentan. El historial registra quién realizó el movimiento.
 - La agenda muestra hasta las 500 citas más recientes por ámbito de acceso. Usa filtros de estado, fecha y nombre.
 - Las sesiones duran ocho horas y se conservan en memoria, sin almacenamiento persistente del JWT. Al recargar el navegador se solicita iniciar sesión nuevamente.
@@ -125,7 +125,7 @@ Remove-Item Env:DATABASE_URL
 Remove-Item Env:TEST_DATABASE_URL
 ```
 
-La integración exige una base cuyo nombre termine en `_test`. Crea y elimina únicamente sus propias entidades. Verifica JWT, protección de roles, aceptación de citas, administración, cinco carreras de reservas, restricciones SQL, QR expirado, duplicación de sellos, canje y cancelación.
+La integración exige una base cuyo nombre termine en `_test`. Crea y elimina únicamente sus propias entidades. Verifica JWT, protección de roles, confirmación inmediata, administración, cinco carreras de reservas, restricciones SQL, QR expirado, duplicación de sellos, canje y retiro de las rutas anteriores.
 
 Flutter:
 
@@ -145,7 +145,7 @@ backend/
   prisma/                 Esquema, migraciones SQL y seed explícito
   src/auth/               Registro, login y perfil con JWT
   src/users/              Directorio y creación de barberos
-  src/appointments/       Disponibilidad, reservas, aceptación y cancelación
+  src/appointments/       Disponibilidad y reservas
   src/stamps/             Tarjeta, QR, escaneo y completado con sellos/canje
   src/services/           Catálogo y administración
   test/                   Reglas de horario e integración con PostgreSQL

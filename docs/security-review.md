@@ -35,7 +35,7 @@ Implementación necesaria para una capa RLS efectiva:
 3. Definir políticas para clientes, barberos asignados y administradores en citas, tarjetas y movimientos. La disponibilidad debe poder consultar ocupación sin revelar clientes; autenticación, registro, catálogo y tareas administrativas necesitan alcances propios.
 4. Probar consultas SQL sin filtros desde el usuario de ejecución, concurrencia, reutilización de conexiones y operaciones de sellos/canjes. Después, habilitar y forzar políticas con migración.
 
-En esta revisión se verificó el aislamiento actual mediante HTTP: un cliente no lista ni cancela las citas ajenas; otro barbero no obtiene la tarjeta mediante un QR sin citas asignadas disponibles y no completa citas ajenas. **Estas pruebas no constituyen RLS ni sustituyen la separación de privilegios de BD.**
+En esta revisión se verificó el aislamiento actual mediante HTTP: un cliente no lista las citas ajenas; otro barbero no obtiene la tarjeta mediante un QR sin citas asignadas disponibles y no completa citas ajenas. **Estas pruebas no constituyen RLS ni sustituyen la separación de privilegios de BD.**
 
 ## Configuración y ejecución
 

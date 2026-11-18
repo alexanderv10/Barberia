@@ -27,14 +27,6 @@ class AdminTools extends StatelessWidget {
                 icon: const Icon(Icons.add),
                 label: const Text('Nuevo servicio'),
               ),
-              OutlinedButton.icon(
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) => BarberEditor(store: store),
-                ),
-                icon: const Icon(Icons.person_add_outlined),
-                label: const Text('Añadir barbero'),
-              ),
             ],
           ),
           const SizedBox(height: 18),
@@ -54,28 +46,64 @@ class AdminTools extends StatelessWidget {
                 ),
               ),
             ),
-          const Divider(),
-          const SizedBox(height: 10),
-          Text(
-            'Equipo · ${store.barbers.length} barberos activos',
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: store.barbers
-                .map(
-                  (b) => Chip(
-                    avatar: const Icon(Icons.person_outline, size: 17),
-                    label: Text(b['name']),
-                  ),
-                )
-                .toList(),
-          ),
         ],
       ),
     ),
+  );
+}
+
+class BarberAdminPanel extends StatelessWidget {
+  final Store store;
+  const BarberAdminPanel({super.key, required this.store});
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SectionTitle(
+        'Barberos',
+        'Crea cuentas y consulta el equipo visible para reservas.',
+      ),
+      Panel(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            FilledButton.icon(
+              onPressed: () => showDialog(
+                context: context,
+                builder: (_) => BarberEditor(store: store),
+              ),
+              icon: const Icon(Icons.person_add_outlined),
+              label: const Text('Añadir barbero'),
+            ),
+            const SizedBox(height: 24),
+            if (store.barbers.isEmpty)
+              const Text(
+                'Aún no hay barberos activos. Añade el primero para habilitar las reservas.',
+              )
+            else ...[
+              Text(
+                'Equipo · ${store.barbers.length} barberos activos',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: store.barbers
+                    .map(
+                      (b) => Chip(
+                        avatar: const Icon(Icons.person_outline, size: 17),
+                        label: Text(b['name']),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ],
   );
 }
 

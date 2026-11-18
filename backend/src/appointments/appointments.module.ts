@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Injectable, Module, Post, Patch, Param, Query, BadRequestException, ForbiddenException, NotFoundException, ConflictException, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Injectable, Module, Post, Query, BadRequestException, NotFoundException, ConflictException } from '@nestjs/common';
 import { IsBoolean, IsISO8601, IsOptional, IsUUID, Matches, MaxLength } from 'class-validator';
 import { DateTime } from 'luxon';
 import { PrismaService } from '../prisma/prisma.service';
@@ -56,24 +56,6 @@ export class AppointmentsService {
       return tx.appointment.create({ data: { clientId: actor.id, barberId: dto.barberId, serviceId: dto.serviceId, startsAt: start.toJSDate(), endsAt, priceCents: dto.isReward ? 0 : service.priceCents, isReward: dto.isReward }, include: appointmentInclude });
     });
   }
-  async cancel(id: string, actor: Actor) {
-    return this.db.atomic(async tx => {
-      const appointment = await tx.appointment.findUnique({ where: { id } });
-      if (!appointment) throw new NotFoundException('Cita no encontrada.');
-      if (actor.role !== 'ADMIN' && appointment[actor.role === 'CLIENT' ? 'clientId' : 'barberId'] !== actor.id) throw new ForbiddenException();
-      if (appointment.status !== 'PENDING') throw new ConflictException('La cita ya fue procesada.');
-      return tx.appointment.update({ where: { id }, data: { status: 'CANCELLED' }, include: appointmentInclude });
-    });
-  }
-  async accept(id: string, actor: Actor) {
-    return this.db.atomic(async tx => {
-      const appointment = await tx.appointment.findUnique({ where: { id } });
-      if (!appointment) throw new NotFoundException('Cita no encontrada.');
-      if (actor.role !== 'ADMIN' && appointment.barberId !== actor.id) throw new ForbiddenException();
-      if (appointment.status !== 'PENDING' || appointment.acceptedAt) throw new ConflictException('La cita ya fue procesada.');
-      return tx.appointment.update({ where: { id }, data: { acceptedAt: new Date() }, include: appointmentInclude });
-    });
-  }
 }
 @Controller('appointments')
 class AppointmentsController {
@@ -81,8 +63,6 @@ class AppointmentsController {
   @Get('availability') availability(@Query() query: AvailabilityDto, @CurrentUser() actor: Actor) { return this.appointments.availability(query, actor); }
   @Get() list(@CurrentUser() actor: Actor) { return this.appointments.list(actor); }
   @Roles('CLIENT') @Post() book(@Body() dto: BookDto, @CurrentUser() actor: Actor) { return this.appointments.book(dto, actor); }
-  @Patch(':id/cancel') cancel(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: Actor) { return this.appointments.cancel(id, actor); }
-  @Roles('BARBER', 'ADMIN') @Patch(':id/accept') accept(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: Actor) { return this.appointments.accept(id, actor); }
 }
 @Module({ controllers: [AppointmentsController], providers: [AppointmentsService] })
 export class AppointmentsModule {}

@@ -96,13 +96,12 @@ test('API y concurrencia contra PostgreSQL real', async t => {
       const oversized = await fetch(`${base}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'x'.repeat(17000), password: 'Integration2026!' }) });
       assert.equal(oversized.status, 413);
     });
-    await t.test('un cliente no lista ni cancela las citas de otro cliente', async () => {
+    await t.test('un cliente no lista las citas de otro cliente', async () => {
       const secondClient = await db.user.create({ data: { name: 'Another Client', email: `${runId}-private@test.local`, passwordHash: 'not-a-login-hash', card: { create: {} } } });
       ids.push(secondClient.id);
       const foreign = await db.appointment.create({ data: { clientId: secondClient.id, barberId: outsider.id, serviceId, startsAt: day.set({ hour: 9 }).toJSDate(), endsAt: day.set({ hour: 9, minute: 30 }).toJSDate(), priceCents: 1200 } });
       const listed = await request('appointments', client);
       assert(!listed.data.some((a: any) => a.id === foreign.id));
-      assert.equal((await request(`appointments/${foreign.id}/cancel`, client, undefined, 'PATCH')).status, 403);
       const privateCard = await request('stamps/card', client);
       assert.equal(privateCard.data.clientId, userId);
       assert.notEqual(privateCard.data.clientId, secondClient.id);
@@ -114,12 +113,9 @@ test('API y concurrencia contra PostgreSQL real', async t => {
         assert.deepEqual(result.map(r => r.status).sort(), [201, 409]);
       }
     });
-    await t.test('solo el barbero asignado o administrador acepta la cita', async () => {
-      const a = await db.appointment.findFirstOrThrow({ where: { clientId: userId, startsAt: new Date(body.startsAt!) } });
-      assert.equal((await request(`appointments/${a.id}/accept`, client, undefined, 'PATCH')).status, 403);
-      assert.equal((await request(`appointments/${a.id}/accept`, otherToken, undefined, 'PATCH')).status, 403);
-      assert.equal((await request(`appointments/${a.id}/accept`, barberToken, undefined, 'PATCH')).status, 200);
-      assert((await db.appointment.findUniqueOrThrow({ where: { id: a.id } })).acceptedAt);
+    await t.test('la reserva aparece de inmediato en la agenda y no requiere aprobación', async () => {
+      const agenda = await request('appointments', barberToken);
+      assert(agenda.data.some((a: any) => a.clientId === userId && a.startsAt === body.startsAt && a.status === 'PENDING'));
     });
     await t.test('administración de catálogo y equipo requiere ADMIN', async () => {
       assert.equal((await request('services/manage', client)).status, 403);
@@ -178,10 +174,12 @@ test('API y concurrencia contra PostgreSQL real', async t => {
       assert.equal(redeemed.data.redeemed, true);
       assert.equal(redeemed.data.stampAwarded, false);
     });
-    await t.test('cancelar libera horario sin alterar sellos', async () => {
+    await t.test('las rutas antiguas no alteran una cita confirmada', async () => {
       const appt = await db.appointment.findFirstOrThrow({ where: { clientId: userId, startsAt: new Date(body.startsAt!) } });
-      assert.equal((await request(`appointments/${appt.id}/cancel`, client, undefined, 'PATCH')).status, 200);
-      assert.equal((await request('appointments', client, body)).status, 201);
+      for (const action of ['accept', 'cancel']) {
+        assert.equal((await request(`appointments/${appt.id}/${action}`, adminToken, undefined, 'PATCH')).status, 404);
+      }
+      assert.equal((await request('appointments', client, body)).status, 409);
       assert.equal((await request('stamps/card', client)).data.currentStamps, 0);
     });
     await t.test('rate limiting limita login y endpoints públicos', async () => {

@@ -22,12 +22,12 @@ Prefijo `/api`. JSON. Usa `Authorization: Bearer <accessToken>` excepto en regis
 | GET | /appointments/availability | Sesión | Franjas libres para fecha, servicio y barbero |
 | GET | /appointments | Sesión | Cliente: sus citas; barbero: su agenda; admin: todas |
 | POST | /appointments | CLIENT | Reserva sin traslapes |
-| PATCH | /appointments/:id/accept | BARBER asignado / ADMIN | Registra aceptación de cita pendiente |
-| PATCH | /appointments/:id/cancel | Propietario / BARBER asignado / ADMIN | Cancela cita pendiente |
 | GET | /stamps/card | CLIENT | Tarjeta, beneficio y últimos 20 movimientos |
 | GET | /stamps/qr | CLIENT | QR firmado, `expiresIn: 300` |
 | POST | /stamps/scan | BARBER / ADMIN | Valida QR y muestra citas que puede completar |
 | POST | /stamps/complete | BARBER asignado / ADMIN | Completa cita y otorga sello o canjea beneficio |
+
+Las citas se confirman al reservar. El estado interno `PENDING` identifica una cita confirmada cuyo servicio aún no se ha completado.
 
 ## Cuerpos
 

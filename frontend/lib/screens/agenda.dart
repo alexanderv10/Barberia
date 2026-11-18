@@ -5,7 +5,7 @@ import '../theme.dart';
 import '../widgets/common.dart';
 import 'booking.dart';
 
-class AppointmentTile extends StatefulWidget {
+class AppointmentTile extends StatelessWidget {
   final Json appointment;
   final Store store;
   const AppointmentTile({
@@ -14,59 +14,11 @@ class AppointmentTile extends StatefulWidget {
     required this.store,
   });
   @override
-  State<AppointmentTile> createState() => _AppointmentTileState();
-}
-
-class _AppointmentTileState extends State<AppointmentTile> {
-  bool busy = false;
-  Future<void> accept() async {
-    setState(() => busy = true);
-    try {
-      await widget.store.accept(widget.appointment);
-      if (mounted) toast(context, 'Cita aceptada.');
-    } catch (e) {
-      if (mounted) toast(context, e);
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  Future<void> cancel() async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('¿Cancelar esta cita?'),
-        content: const Text('El horario quedará disponible para otra persona.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Conservar cita'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Cancelar cita'),
-          ),
-        ],
-      ),
-    );
-    if (ok != true || !mounted) return;
-    setState(() => busy = true);
-    try {
-      await widget.store.cancel(widget.appointment);
-      if (mounted) toast(context, 'Cita cancelada.');
-    } catch (e) {
-      if (mounted) toast(context, e);
-    } finally {
-      if (mounted) setState(() => busy = false);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final a = widget.appointment;
+    final a = appointment;
     final status = a['status'];
     final label = {
-      'PENDING': a['acceptedAt'] == null ? 'Pendiente' : 'Aceptada',
+      'PENDING': 'Confirmada',
       'COMPLETED': 'Completada',
       'CANCELLED': 'Cancelada',
     }[status]!;
@@ -113,7 +65,7 @@ class _AppointmentTileState extends State<AppointmentTile> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  widget.store.staff
+                  store.staff
                       ? a['client']['name']
                       : 'Con ${a['barber']['name']}',
                   style: const TextStyle(fontSize: 12, color: AppColors.muted),
@@ -126,43 +78,20 @@ class _AppointmentTileState extends State<AppointmentTile> {
               ],
             ),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: .09),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: .09),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
               ),
-              if (status == 'PENDING')
-                TextButton(
-                  onPressed: busy ? null : cancel,
-                  child: Text(
-                    busy ? 'Cancelando…' : 'Cancelar',
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                ),
-              if (status == 'PENDING' &&
-                  widget.store.staff &&
-                  a['acceptedAt'] == null)
-                TextButton(
-                  onPressed: busy ? null : accept,
-                  child: const Text('Aceptar', style: TextStyle(fontSize: 11)),
-                ),
-            ],
+            ),
           ),
         ],
       ),
@@ -229,7 +158,7 @@ class _AgendaScreenState extends State<AgendaScreen> {
                 runSpacing: 8,
                 children: [
                   for (final f in {
-                    'PENDING': 'Pendientes',
+                    'PENDING': 'Confirmadas',
                     'COMPLETED': 'Completadas',
                     'CANCELLED': 'Canceladas',
                     'ALL': 'Todas',

@@ -225,33 +225,9 @@ class Store extends ChangeNotifier {
     await refresh();
   }
 
-  Future<void> cancel(Json appointment) async {
-    if (demo) {
-      appointment['status'] = 'CANCELLED';
-    } else {
-      await api.request(
-        'appointments/${appointment['id']}/cancel',
-        method: 'PATCH',
-      );
-    }
-    await refresh();
-  }
-
   Future<String> qr() async => demo
       ? 'BARBERIA-DEMO-SIN-VALOR'
       : (await api.request('stamps/qr'))['qrToken'];
-
-  Future<void> accept(Json appointment) async {
-    if (demo) {
-      appointment['acceptedAt'] = DateTime.now().toUtc().toIso8601String();
-    } else {
-      await api.request(
-        'appointments/${appointment['id']}/accept',
-        method: 'PATCH',
-      );
-    }
-    await refresh();
-  }
 
   Future<void> saveService(Json data, {String? id}) async {
     await api.request(
