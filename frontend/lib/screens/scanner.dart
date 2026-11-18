@@ -14,10 +14,11 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen> {
   final input = TextEditingController();
+  final resultAnchor = GlobalKey();
   MobileScannerController? camera;
   bool busy = false;
   Json? result;
-  String? error, scanned;
+  String? error, scanned, lastDetected;
   @override
   void dispose() {
     input.dispose();
@@ -35,19 +36,36 @@ class _ScannerScreenState extends State<ScannerScreen> {
     try {
       final r = await widget.store.scan(token);
       if (mounted) {
+        setState(() {
+          result = r;
+          scanned = token;
+        });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final target = resultAnchor.currentContext;
+          if (target != null) {
+            Scrollable.ensureVisible(
+              target,
+              duration: const Duration(milliseconds: 250),
+            );
+          }
+        });
         await camera?.stop();
-        if (mounted) {
-          setState(() {
-            result = r;
-            scanned = token;
-          });
-        }
       }
     } catch (e) {
       if (mounted) setState(() => error = e.toString());
     } finally {
       if (mounted) setState(() => busy = false);
     }
+  }
+
+  Future<void> restartCamera() async {
+    setState(() {
+      result = null;
+      error = null;
+      scanned = null;
+      lastDetected = null;
+    });
+    await camera?.start();
   }
 
   Future<void> complete(Json a) async {
@@ -127,6 +145,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
               )
             else ...[
+              if (busy && result == null)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 12),
+                  child: Text('QR detectado. Validando tarjeta…'),
+                ),
               SizedBox(
                 height: 290,
                 child: ClipRRect(
@@ -136,7 +159,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     onDetect: (capture) {
                       if (result == null && !busy) {
                         final token = capture.barcodes.firstOrNull?.rawValue;
-                        if (token != null) scan(token);
+                        if (token != null &&
+                            token.isNotEmpty &&
+                            token != lastDetected) {
+                          lastDetected = token;
+                          scan(token);
+                        }
                       }
                     },
                     errorBuilder: (context, error) => const Center(
@@ -148,8 +176,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () => camera?.start(),
-                child: const Text('Reactivar cámara'),
+                onPressed: busy ? null : restartCamera,
+                child: const Text('Volver a escanear'),
               ),
             ],
             const Divider(),
@@ -199,6 +227,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       if (result != null) ...[
         const SizedBox(height: 24),
         Panel(
+          key: resultAnchor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
