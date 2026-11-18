@@ -11,9 +11,7 @@ test('CSP bloquea scripts inline/eval y solo permite el decodificador QR version
   assert(!scriptSrc.includes("'unsafe-inline'"));
   assert(!scriptSrc.includes("'unsafe-eval'"));
   assert(!scriptSrc.includes('*'));
-  assert(scriptSrc.includes('https://cdn.jsdelivr.net/npm/zxing-wasm@3.1.3/dist/iife/reader/index.js'));
-  const connectSrc = csp.split(';').map(d => d.trim()).find(d => d.startsWith('connect-src '));
-  assert(connectSrc.includes('https://fastly.jsdelivr.net/npm/zxing-wasm@3.1.3/dist/reader/zxing_reader.wasm'));
+  assert(scriptSrc.includes('https://cdn.jsdelivr.net/npm/@zxing/library@0.23.0/umd/index.min.js'));
   assert(csp.includes("object-src 'none'"));
   assert(csp.includes("frame-ancestors 'none'"));
   assert.equal(headers['Permissions-Policy'], 'camera=(self), microphone=(), geolocation=()');

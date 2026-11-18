@@ -223,7 +223,8 @@ class _LoyaltyScreenState extends State<LoyaltyScreen> {
                   if (token != null)
                     QrImageView(
                       data: token!,
-                      size: 235,
+                      size: 270,
+                      padding: const EdgeInsets.all(22),
                       backgroundColor: Colors.white,
                     )
                   else if (error == null)

@@ -71,9 +71,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   void activateCamera() {
     if (kIsWeb) {
-      MobileScannerPlatform.instance.setWebBarcodeReader(
-        WebBarcodeReader.zxingWasm,
-      );
+      MobileScannerPlatform.instance
+        ..setWebBarcodeReader(WebBarcodeReader.zxingJs)
+        ..setBarcodeLibraryScriptUrl(
+          'https://cdn.jsdelivr.net/npm/@zxing/library@0.23.0/umd/index.min.js',
+        );
     }
     setState(() {
       camera = MobileScannerController(formats: const [BarcodeFormat.qrCode]);
@@ -189,6 +191,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
               TextButton(
                 onPressed: busy ? null : restartCamera,
                 child: const Text('Volver a escanear'),
+              ),
+              const Text(
+                'Centra el QR completo. Si aparece borroso, aleja un poco el teléfono.',
               ),
             ],
             const Divider(),
