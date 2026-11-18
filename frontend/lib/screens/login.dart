@@ -262,45 +262,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                        const Divider(),
-                        const SizedBox(height: 14),
-                        const Text(
-                          'EXPLORA LA EXPERIENCIA',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: AppColors.muted,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: [
-                            OutlinedButton(
-                              onPressed: busy
-                                  ? null
-                                  : () => widget.store.enterDemo(),
-                              child: const Text('Demo cliente'),
-                            ),
-                            OutlinedButton(
-                              onPressed: busy
-                                  ? null
-                                  : () => widget.store.enterDemo(asStaff: true),
-                              child: const Text('Demo barbero'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'La demostración usa datos de ejemplo y no crea reservas reales.',
-                          style: TextStyle(
-                            color: AppColors.muted,
-                            fontSize: 11,
-                          ),
-                        ),
                       ],
                     ),
                   ),
