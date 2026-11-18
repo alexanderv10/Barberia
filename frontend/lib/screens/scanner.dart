@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../data/api.dart';
 import '../data/store.dart';
@@ -68,6 +69,17 @@ class _ScannerScreenState extends State<ScannerScreen> {
     await camera?.start();
   }
 
+  void activateCamera() {
+    if (kIsWeb) {
+      MobileScannerPlatform.instance.setWebBarcodeReader(
+        WebBarcodeReader.zxingWasm,
+      );
+    }
+    setState(() {
+      camera = MobileScannerController(formats: const [BarcodeFormat.qrCode]);
+    });
+  }
+
   Future<void> complete(Json a) async {
     final accepted = await showDialog<bool>(
       context: context,
@@ -129,8 +141,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                     ),
                     const SizedBox(height: 24),
                     FilledButton.icon(
-                      onPressed: () =>
-                          setState(() => camera = MobileScannerController()),
+                      onPressed: activateCamera,
                       icon: const Icon(Icons.camera_alt_outlined),
                       label: const Text('Activar cámara'),
                     ),

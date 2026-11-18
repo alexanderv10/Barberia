@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../data/api.dart';
 import '../data/store.dart';
@@ -256,6 +257,26 @@ class _LoyaltyScreenState extends State<LoyaltyScreen> {
                     icon: const Icon(Icons.refresh, size: 18),
                     label: const Text('Actualizar QR'),
                   ),
+                  if (token case final code?)
+                    TextButton.icon(
+                      onPressed: () async {
+                        try {
+                          await Clipboard.setData(ClipboardData(text: code));
+                          if (context.mounted) {
+                            toast(context, 'Código copiado.');
+                          }
+                        } catch (_) {
+                          if (context.mounted) {
+                            toast(
+                              context,
+                              'El navegador no permitió copiar el código.',
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.copy_outlined, size: 18),
+                      label: const Text('Copiar código'),
+                    ),
                 ],
               ),
             );
